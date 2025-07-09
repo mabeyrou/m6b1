@@ -1,4 +1,5 @@
 __pycache__
 logs
+*/__pycache__
 .venv
 __pytest_cache__
