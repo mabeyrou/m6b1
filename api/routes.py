@@ -10,8 +10,8 @@ import numpy as np
 import base64
 import io
 
+from schemas import PredictRequest, FeedbackRequest
 from modules.models import predict
-from schemas import DigitRequest
 from database import get_db
 from models import Digit
 
@@ -40,8 +40,8 @@ async def heath():
 
 
 @router.post("/predict")
-async def predict_digit(digitRequest: DigitRequest, db: Session = Depends(get_db)):
-    img_bytes = base64.b64decode(digitRequest.image)
+async def predict_digit(predictRequest: PredictRequest, db: Session = Depends(get_db)):
+    img_bytes = base64.b64decode(predictRequest.image)
     img_pil = Image.open(io.BytesIO(img_bytes))
     img_pil = img_pil.convert("L").resize((EXPECTED_DIMENSION, EXPECTED_DIMENSION))
 
@@ -62,14 +62,15 @@ async def predict_digit(digitRequest: DigitRequest, db: Session = Depends(get_db
         logger.info("Starting prediction...")
         predictions = predict(model, img_array)
         prediction = int(np.argmax(predictions))
-        confidence = predictions[prediction]
+        confidence = float(predictions[prediction])
+
         logger.info(
             f"The model predicted: {prediction} with a confidence of {confidence}"
         )
 
         db_digit = Digit(
             img_path=image_path,
-            predicted_digit=prediction,
+            predicted_label=prediction,
             confidence=confidence,
             created_at=datetime.now(),
         )
@@ -77,8 +78,35 @@ async def predict_digit(digitRequest: DigitRequest, db: Session = Depends(get_db
         db.commit()
         db.refresh(db_digit)
 
-        return {"success": True, "prediction": prediction}
+        response = {
+            "success": True,
+            "predicted_digit": prediction,
+            "confidence": confidence,
+            "digit_uuid": db_digit.uuid,
+        }
+
+        return response
     except Exception as err:
         logger.error(f"An error occured during prediction: {err}")
         detail_message = f"Something went wrong during prediction: {err}"
+        raise HTTPException(status_code=500, detail=detail_message)
+
+
+@router.post("/feedback")
+async def provide_feedback(
+    feedbackRequest: FeedbackRequest, db: Session = Depends(get_db)
+):
+    logger.debug(feedbackRequest)
+    try:
+        db_digit = (
+            db.query(Digit).filter(Digit.uuid == feedbackRequest.digit_uuid).first()
+        )
+        db_digit.true_label = feedbackRequest.true_digit
+        db_digit.has_feedback = True
+        db.commit()
+
+        return {"success": True}
+    except Exception as err:
+        logger.error(f"An error occured during feedback: {err}")
+        detail_message = f"Something went wrong during feedback: {err}"
         raise HTTPException(status_code=500, detail=detail_message)

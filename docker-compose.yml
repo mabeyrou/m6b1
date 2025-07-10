@@ -23,7 +23,6 @@ services:
       - monitoring
 
   streamlit:
-    # image: marou974/m0b5-front:${APP_VERSION}   # to test remote images
     build:
       context: ./streamlit
       dockerfile: Dockerfile

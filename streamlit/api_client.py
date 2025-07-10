@@ -18,4 +18,17 @@ def predict(image):
         return response.json()
     except requests.exceptions.RequestException as error:
         logger.error(f"Error while predicting: {error}")
-        return {"success": False, "message": "Something went wrong while predicting"}
+        return {"success": False, "message": "Something went wrong while predicting."}
+
+
+def feedback(feedback_request):
+    try:
+        response = requests.post(
+            url=f"{API_URL}/feedback", json=feedback_request, timeout=5
+        )
+        response.raise_for_status()
+
+        return response.json()
+    except requests.exceptions.RequestException as error:
+        logger.error(f"Error while predicting: {error}")
+        return {"success": False, "message": "Something went wrong during feedback."}

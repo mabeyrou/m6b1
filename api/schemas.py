@@ -1,5 +1,18 @@
 from pydantic import BaseModel
 
 
-class DigitRequest(BaseModel):
+class PredictRequest(BaseModel):
     image: str
+
+
+class PredictResponse(BaseModel):
+    success: bool
+    predicted_digit: int
+    confidence: float
+    digit_uuid: str
+
+
+class FeedbackRequest(BaseModel):
+    true_digit: int
+    digit_uuid: str
+    is_correct: bool
