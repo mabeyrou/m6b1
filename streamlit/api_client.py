@@ -13,7 +13,6 @@ def predict(image):
         response = requests.post(
             url=f"{API_URL}/predict", json={"image": image}, timeout=300
         )
-        logger.debug(response)
         response.raise_for_status()
 
         return response.json()

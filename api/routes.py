@@ -1,11 +1,13 @@
 from fastapi import APIRouter, HTTPException
 from loguru import logger
 from os.path import join
+from os import makedirs
 from tensorflow import keras
 import base64
 import io
 from PIL import Image
 import numpy as np
+from datetime import datetime
 
 
 from modules.models import predict
@@ -13,7 +15,7 @@ from schemas import DigitRequest
 
 router = APIRouter()
 
-model_path = join("models", "cnn_latest.keras")
+model_path = join(".", "models", "cnn_latest.keras")
 try:
     logger.debug(model_path)
     model = keras.models.load_model(model_path)
@@ -38,11 +40,18 @@ async def heath():
 @router.post("/predict")
 async def predict_digit(digitRequest: DigitRequest):
     img_bytes = base64.b64decode(digitRequest.image)
-    img_pil = (
-        Image.open(io.BytesIO(img_bytes))
-        .convert("L")
-        .resize((EXPECTED_DIMENSION, EXPECTED_DIMENSION))
-    )
+    img_pil = Image.open(io.BytesIO(img_bytes))
+    img_pil = img_pil.convert("L").resize((EXPECTED_DIMENSION, EXPECTED_DIMENSION))
+
+    images_dir = "./data/images"
+    makedirs(images_dir, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    image_path = join(images_dir, f"image_{timestamp}.png")
+
+    img_pil.save(image_path)
+    logger.info(f"Image saved to {image_path}")
+
     img_array = (
         np.array(img_pil).reshape(1, EXPECTED_DIMENSION, EXPECTED_DIMENSION) / 255.0
     )
