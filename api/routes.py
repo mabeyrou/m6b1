@@ -1,17 +1,19 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from datetime import datetime
+from tensorflow import keras
 from loguru import logger
 from os.path import join
 from os import makedirs
-from tensorflow import keras
-import base64
-import io
 from PIL import Image
 import numpy as np
-from datetime import datetime
-
+import base64
+import io
 
 from modules.models import predict
 from schemas import DigitRequest
+from database import get_db
+from models import Digit
 
 router = APIRouter()
 
@@ -38,7 +40,7 @@ async def heath():
 
 
 @router.post("/predict")
-async def predict_digit(digitRequest: DigitRequest):
+async def predict_digit(digitRequest: DigitRequest, db: Session = Depends(get_db)):
     img_bytes = base64.b64decode(digitRequest.image)
     img_pil = Image.open(io.BytesIO(img_bytes))
     img_pil = img_pil.convert("L").resize((EXPECTED_DIMENSION, EXPECTED_DIMENSION))
@@ -60,7 +62,20 @@ async def predict_digit(digitRequest: DigitRequest):
         logger.info("Starting prediction...")
         predictions = predict(model, img_array)
         prediction = int(np.argmax(predictions))
-        logger.info(f"The model predicted: {prediction}")
+        confidence = predictions[prediction]
+        logger.info(
+            f"The model predicted: {prediction} with a confidence of {confidence}"
+        )
+
+        db_digit = Digit(
+            img_path=image_path,
+            predicted_digit=prediction,
+            confidence=confidence,
+            created_at=datetime.now(),
+        )
+        db.add(db_digit)
+        db.commit()
+        db.refresh(db_digit)
 
         return {"success": True, "prediction": prediction}
     except Exception as err:

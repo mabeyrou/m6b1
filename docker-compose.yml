@@ -12,9 +12,12 @@ services:
       - .env 
     environment:
       - APP_ENV=${APP_ENV:-local}
+      - PYTHONPATH=/app
     volumes:
       - ./api:/app
-      - ./models:/app/models 
+      - ./models:/app/models
+      - ./data:/app/data
+      - ./logs:/app/logs
     networks:
       - app-network
       - monitoring
@@ -35,6 +38,7 @@ services:
       - API_URL=${API_URL:-http://api:8000}
     volumes:
       - ./streamlit:/app
+      - ./logs:/app/logs
     networks:
       - app-network
 
