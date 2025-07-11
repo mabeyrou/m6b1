@@ -37,8 +37,8 @@ jobs:
           file: ./api/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/m0b5-back:latest
-            ${{ secrets.DOCKER_USERNAME }}/m0b5-back:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/m6b1-back:latest
+            ${{ secrets.DOCKER_USERNAME }}/m6b1-back:${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
@@ -49,8 +49,8 @@ jobs:
           file: ./streamlit/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/m0b5-front:latest
-            ${{ secrets.DOCKER_USERNAME }}/m0b5-front:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/m6b1-front:latest
+            ${{ secrets.DOCKER_USERNAME }}/m6b1-front:${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
