@@ -80,7 +80,7 @@ def main():
         with st.spinner("Predicting..."):
             prediction_result = predict(img_base64)
 
-            if prediction_result["success"]:
+            if prediction_result:
                 st.session_state.current_prediction = prediction_result
                 st.session_state.feedback_submitted = False
 
@@ -111,7 +111,7 @@ def main():
                             {
                                 "digit_uuid": pred["digit_uuid"],
                                 "is_correct": True,
-                                "true_digit": pred,
+                                "true_digit": pred["predicted_digit"],
                             }
                         )
                         if feedback_result:
@@ -137,6 +137,7 @@ def main():
 
                         with digit_cols[col_idx]:
                             if st.button(f"{i}", key=f"digit_{i}"):
+                                logger.debug("before")
                                 feedback_result = feedback(
                                     {
                                         "digit_uuid": pred["digit_uuid"],
@@ -144,6 +145,7 @@ def main():
                                         "true_digit": i,
                                     }
                                 )
+                                logger.debug(feedback_result)
                                 if feedback_result:
                                     st.session_state.feedback_submitted = True
                                     st.session_state.show_correction = False

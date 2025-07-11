@@ -2,6 +2,7 @@ from os import getenv
 from dotenv import load_dotenv
 import requests
 from loguru import logger
+import streamlit as st
 
 load_dotenv()
 
@@ -18,7 +19,8 @@ def predict(image):
         return response.json()
     except requests.exceptions.RequestException as error:
         logger.error(f"Error while predicting: {error}")
-        return {"success": False, "message": "Something went wrong while predicting."}
+        st.error(f"Something went wrong while predicting: {str(error)}")
+        return None
 
 
 def feedback(feedback_request):
@@ -30,5 +32,6 @@ def feedback(feedback_request):
 
         return response.json()
     except requests.exceptions.RequestException as error:
-        logger.error(f"Error while predicting: {error}")
-        return {"success": False, "message": "Something went wrong during feedback."}
+        logger.error(f"Error during feedback: {error}")
+        st.error(f"Something went wrong during : {str(error)}")
+        return None

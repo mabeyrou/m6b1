@@ -19,10 +19,8 @@ router = APIRouter()
 
 model_path = join(".", "models", "cnn_latest.keras")
 try:
-    logger.debug(model_path)
     model = keras.models.load_model(model_path)
 except Exception as error:
-    logger.debug(model_path)
     logger.error(f"Error loading model from {model_path}: {error}")
 
 
@@ -72,14 +70,12 @@ async def predict_digit(predictRequest: PredictRequest, db: Session = Depends(ge
             img_path=image_path,
             predicted_label=prediction,
             confidence=confidence,
-            created_at=datetime.now(),
         )
         db.add(db_digit)
         db.commit()
         db.refresh(db_digit)
 
         response = {
-            "success": True,
             "predicted_digit": prediction,
             "confidence": confidence,
             "digit_uuid": db_digit.uuid,
@@ -96,7 +92,6 @@ async def predict_digit(predictRequest: PredictRequest, db: Session = Depends(ge
 async def provide_feedback(
     feedbackRequest: FeedbackRequest, db: Session = Depends(get_db)
 ):
-    logger.debug(feedbackRequest)
     try:
         db_digit = (
             db.query(Digit).filter(Digit.uuid == feedbackRequest.digit_uuid).first()
@@ -104,8 +99,9 @@ async def provide_feedback(
         db_digit.true_label = feedbackRequest.true_digit
         db_digit.has_feedback = True
         db.commit()
+        db.refresh(db_digit)
 
-        return {"success": True}
+        return db_digit
     except Exception as err:
         logger.error(f"An error occured during feedback: {err}")
         detail_message = f"Something went wrong during feedback: {err}"

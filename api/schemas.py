@@ -6,7 +6,6 @@ class PredictRequest(BaseModel):
 
 
 class PredictResponse(BaseModel):
-    success: bool
     predicted_digit: int
     confidence: float
     digit_uuid: str

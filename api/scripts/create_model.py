@@ -14,6 +14,7 @@ trained_model, history = train(
     y=y_train,
     X_val=X_test,
     y_val=y_test,
+    epochs=50,
 )
 
 current_dir = dirname(abspath(__file__))
@@ -21,7 +22,7 @@ current_dir = dirname(abspath(__file__))
 models_dir = abspath(join("models"))
 
 latest_model_name = "cnn_latest.keras"
-current_date_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+current_date_time = datetime.now().strftime("%Y%m%d%H%M%S")
 current_model_name = f"cnn_{current_date_time}.keras"
 
 trained_model.save(join(models_dir, latest_model_name))
